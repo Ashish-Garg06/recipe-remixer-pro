@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     }
 
     const hfResponse = await fetch(
-      "https://router.huggingface.co/v1/models/google/flan-t5-large",
+      "https://api-inference.huggingface.co/models/google/flan-t5-large",
       {
         method: "POST",
         headers: {
@@ -28,17 +28,9 @@ export default async function handler(req, res) {
       }
     );
 
-    const text = await hfResponse.text();
+    const data = await hfResponse.json();
+    return res.status(200).json(data);
 
-    // 🔒 If HF fails, still return JSON
-    try {
-      return res.status(200).json(JSON.parse(text));
-    } catch {
-      return res.status(500).json({
-        error: "Hugging Face returned non-JSON",
-        raw: text,
-      });
-    }
   } catch (err) {
     console.error("API ERROR:", err);
     return res.status(500).json({
