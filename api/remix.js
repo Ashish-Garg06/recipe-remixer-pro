@@ -15,7 +15,7 @@ export default async function handler(req, res) {
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${process.env.HF_API_KEY}`,
+          Authorization: `Bearer ${process.env.HF_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -32,6 +32,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json(data);
   } catch (err) {
+    console.error("API ERROR:", err);
     return res.status(500).json({
       error: err.message || "Internal Server Error",
     });
