@@ -2,16 +2,7 @@ export async function handler(event) {
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ error: "Method Not Allowed" }),
-    };
-  }
-
-  if (!process.env.HF_API_KEY) {
-    return {
-      statusCode: 500,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ error: "HF_API_KEY not set" }),
     };
   }
 
@@ -21,12 +12,11 @@ export async function handler(event) {
     if (!prompt) {
       return {
         statusCode: 400,
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ error: "Prompt missing" }),
       };
     }
 
-    const response = await fetch(
+    const hfResponse = await fetch(
       "https://router.huggingface.co/v1/chat/completions",
       {
         method: "POST",
@@ -42,24 +32,27 @@ export async function handler(event) {
               content: prompt,
             },
           ],
-          max_tokens: 700,
           temperature: 0.7,
+          max_tokens: 600,
         }),
       }
     );
 
-    const data = await response.json();
+    const data = await hfResponse.json();
 
     return {
       statusCode: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(data),
     };
   } catch (err) {
     return {
       statusCode: 500,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ error: err.message }),
+      body: JSON.stringify({
+        error: err.message || "Internal Server Error",
+      }),
     };
   }
 }
