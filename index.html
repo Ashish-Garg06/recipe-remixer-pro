@@ -147,11 +147,24 @@ Total Calories: [number only]
     throw new Error("AI request failed");
     }
 
+    console.log("HF RAW RESPONSE:", data);
     const data = await response.json();
-    const recipeText =
-    data.choices?.[0]?.message?.content || "No response from AI";
+
+    let recipeText = "No response from AI";
+
+    if (data?.choices?.length > 0) {
+    recipeText =
+        data.choices[0].message?.content ||
+        data.choices[0].text ||
+        recipeText;
+    }
+
+    if (data?.error) {
+    recipeText = `AI Error: ${data.error}`;
+    }
 
     setRemixedRecipe(recipeText);
+
 
 
 
