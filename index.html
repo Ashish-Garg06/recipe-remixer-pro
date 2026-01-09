@@ -160,9 +160,9 @@ Total Calories: [number only]
 
     let recipeText = "No response from AI";
 
-    // Hugging Face Router response format
-    if (Array.isArray(data) && data[0]?.generated_text) {
-    recipeText = data[0].generated_text;
+
+    if (data?.text) {
+    recipeText = data.text;
     }
 
     // Hugging Face error format
