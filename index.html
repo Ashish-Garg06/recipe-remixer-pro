@@ -138,17 +138,23 @@ Total Calories: [number only]
     headers: {
         "Content-Type": "application/json",
     },
-    body: JSON.stringify({ prompt }),
+    body: JSON.stringify({
+        prompt: prompt,
+    }),
     });
 
     if (!response.ok) {
     throw new Error("AI request failed");
     }
 
-    const result = await response.json();
-    const recipeText = result.text;
+    const data = await response.json();
+    const recipeText =
+    data[0]?.generated_text ||
+    data.generated_text ||
+    JSON.stringify(data);
+
     setRemixedRecipe(recipeText);
-    ;
+
 
     // Optional parsing (best-effort)
     const calorieMatch = recipeText.match(/Total Calories:\s*(\d+)/i);

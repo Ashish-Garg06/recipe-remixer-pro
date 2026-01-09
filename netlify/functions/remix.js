@@ -7,9 +7,15 @@ export async function handler(event) {
   }
 
   try {
-    const body = JSON.parse(event.body);
-    const prompt = body.prompt || body.inputs;
+    if (!process.env.HF_API_KEY) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: "HF_API_KEY missing in environment" }),
+      };
+    }
 
+    const body = JSON.parse(event.body || "{}");
+    const prompt = body.prompt;
 
     if (!prompt) {
       return {
@@ -18,7 +24,7 @@ export async function handler(event) {
       };
     }
 
-    const response = await fetch(
+    const hfResponse = await fetch(
       "https://api-inference.huggingface.co/models/google/flan-t5-large",
       {
         method: "POST",
@@ -36,25 +42,30 @@ export async function handler(event) {
       }
     );
 
-    if (!response.ok) {
-      const text = await response.text();
+    const text = await hfResponse.text();
+
+    if (!hfResponse.ok) {
       return {
-        statusCode: response.status,
-        body: JSON.stringify({ error: text }),
+        statusCode: hfResponse.status,
+        body: JSON.stringify({
+          error: "Hugging Face error",
+          status: hfResponse.status,
+          details: text,
+        }),
       };
     }
 
-    const data = await response.json();
-
     return {
-    statusCode: 200,
-    body: JSON.stringify(data),
+      statusCode: 200,
+      body: text,
     };
-
   } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: err.message }),
+      body: JSON.stringify({
+        error: "Function crashed",
+        message: err.message,
+      }),
     };
   }
 }
