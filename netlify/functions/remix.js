@@ -1,25 +1,35 @@
 export async function handler(event) {
+  // Allow only POST
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ error: "Method Not Allowed" }),
     };
   }
 
-  try {
-    if (!process.env.HF_API_KEY) {
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ error: "HF_API_KEY missing in environment" }),
-      };
-    }
+  // Check env var
+  if (!process.env.HF_API_KEY) {
+    return {
+      statusCode: 500,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ error: "HF_API_KEY not set" }),
+    };
+  }
 
-    const body = JSON.parse(event.body || "{}");
-    const prompt = body.prompt;
+  try {
+    const { prompt } = JSON.parse(event.body || "{}");
 
     if (!prompt) {
       return {
         statusCode: 400,
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ error: "Prompt missing" }),
       };
     }
@@ -42,30 +52,22 @@ export async function handler(event) {
       }
     );
 
-    const text = await hfResponse.text();
-
-    if (!hfResponse.ok) {
-      return {
-        statusCode: hfResponse.status,
-        body: JSON.stringify({
-          error: "Hugging Face error",
-          status: hfResponse.status,
-          details: text,
-        }),
-      };
-    }
+    const data = await hfResponse.json();
 
     return {
       statusCode: 200,
-      body: text,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
     };
   } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({
-        error: "Function crashed",
-        message: err.message,
-      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ error: err.message }),
     };
   }
 }
