@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { prompt } = req.body || {};
+    const { prompt } = req.body;
 
     if (!prompt) {
       return res.status(400).json({ error: "Prompt missing" });
@@ -28,9 +28,17 @@ export default async function handler(req, res) {
       }
     );
 
-    const data = await hfResponse.json();
+    const text = await hfResponse.text();
 
-    return res.status(200).json(data);
+    // 🔒 If HF fails, still return JSON
+    try {
+      return res.status(200).json(JSON.parse(text));
+    } catch {
+      return res.status(500).json({
+        error: "Hugging Face returned non-JSON",
+        raw: text,
+      });
+    }
   } catch (err) {
     console.error("API ERROR:", err);
     return res.status(500).json({

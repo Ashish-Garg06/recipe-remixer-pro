@@ -148,7 +148,13 @@ Total Calories: [number only]
     }),
     });
 
-const data = await response.json();
+    if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text);
+    }
+
+    const data = await response.json();
+
 
     console.log("HF RAW RESPONSE:", data);
 
