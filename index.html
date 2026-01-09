@@ -91,8 +91,11 @@
 
 
       const remixRecipe = async () => {
-  if (!recipe.trim()) { setError('Please enter a recipe'); return; }
-  if (!inventory.trim()) { setError('Please enter your available ingredients'); return; }
+    if (!recipe.trim() && !inventory.trim()) {
+    setError('Please enter a recipe or ingredients');
+    return;
+    }
+
 
   setLoading(true);
   setError('');
@@ -113,10 +116,10 @@
     const prompt = `You are a professional chef and nutritionist.
 
 ORIGINAL RECIPE:
-${recipe}
+${recipe || "None"}
 
 AVAILABLE INGREDIENTS:
-${inventory}${restrictionsText}
+${inventory || "None"}${restrictionsText}
 
 Analyze and adapt the recipe. Format EXACTLY as:
 ## Remixed Recipe: [name]
@@ -131,7 +134,9 @@ Analyze and adapt the recipe. Format EXACTLY as:
 ### Nutritional Information:
 Total Calories: [number only]
 ### Shopping List:
-[comma-separated missing ingredients or "None - you have everything!"]`;
+[comma-separated missing ingredients or "None - you have everything!"]`.trim();
+
+
 
      const response = await fetch("/.netlify/functions/remix", {
     method: "POST",
@@ -148,15 +153,16 @@ Total Calories: [number only]
 
     let recipeText = "No response from AI";
 
-    if (data?.choices?.length > 0) {
-    recipeText =
-        data.choices[0].message?.content ||
-        data.choices[0].text ||
-        recipeText;
+    // Hugging Face Router response format
+    if (Array.isArray(data) && data[0]?.generated_text) {
+    recipeText = data[0].generated_text;
     }
 
+    // Hugging Face error format
     if (data?.error) {
-    recipeText = `AI Error: ${data.error}`;
+    recipeText = typeof data.error === "string"
+        ? `AI Error: ${data.error}`
+        : "AI Error: Request failed";
     }
 
     setRemixedRecipe(recipeText);
