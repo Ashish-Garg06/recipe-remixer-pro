@@ -16,8 +16,8 @@ export async function handler(event) {
       };
     }
 
-    const hfResponse = await fetch(
-      "https://router.huggingface.co/v1/chat/completions",
+    const response = await fetch(
+      "https://router.huggingface.co/v1/models/google/flan-t5-large",
       {
         method: "POST",
         headers: {
@@ -25,27 +25,23 @@ export async function handler(event) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "mistralai/Mistral-7B-Instruct-v0.2",
-          messages: [
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          temperature: 0.7,
-          max_tokens: 600,
+          inputs: prompt,
+          parameters: {
+            max_new_tokens: 700,
+            temperature: 0.7,
+          },
         }),
       }
     );
 
-    const data = await hfResponse.json();
+    const result = await response.json();
 
     return {
       statusCode: 200,
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify(result),
     };
   } catch (err) {
     return {
