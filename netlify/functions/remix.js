@@ -7,7 +7,9 @@ export async function handler(event) {
   }
 
   try {
-    const { prompt } = JSON.parse(event.body);
+    const body = JSON.parse(event.body);
+    const prompt = body.prompt || body.inputs;
+
 
     if (!prompt) {
       return {
@@ -45,11 +47,10 @@ export async function handler(event) {
     const data = await response.json();
 
     return {
-      statusCode: 200,
-      body: JSON.stringify({
-        text: data[0]?.generated_text || "",
-      }),
+    statusCode: 200,
+    body: JSON.stringify(data),
     };
+
   } catch (err) {
     return {
       statusCode: 500,
