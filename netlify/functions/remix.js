@@ -35,7 +35,7 @@ export async function handler(event) {
     }
 
     const hfResponse = await fetch(
-      "https://api-inference.huggingface.co/models/google/flan-t5-large",
+      "https://router.huggingface.co/v1/chat/completions",
       {
         method: "POST",
         headers: {
