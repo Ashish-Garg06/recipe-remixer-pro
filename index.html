@@ -149,11 +149,10 @@ Total Calories: [number only]
 
     const data = await response.json();
     const recipeText =
-    data[0]?.generated_text ||
-    data.generated_text ||
-    JSON.stringify(data);
+    data.choices?.[0]?.message?.content || "No response from AI";
 
     setRemixedRecipe(recipeText);
+
 
 
     // Optional parsing (best-effort)

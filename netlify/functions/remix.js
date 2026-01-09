@@ -1,22 +1,16 @@
 export async function handler(event) {
-  // Allow only POST
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ error: "Method Not Allowed" }),
     };
   }
 
-  // Check env var
   if (!process.env.HF_API_KEY) {
     return {
       statusCode: 500,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ error: "HF_API_KEY not set" }),
     };
   }
@@ -27,14 +21,12 @@ export async function handler(event) {
     if (!prompt) {
       return {
         statusCode: 400,
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ error: "Prompt missing" }),
       };
     }
 
-    const hfResponse = await fetch(
+    const response = await fetch(
       "https://router.huggingface.co/v1/chat/completions",
       {
         method: "POST",
@@ -43,30 +35,30 @@ export async function handler(event) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          inputs: prompt,
-          parameters: {
-            max_new_tokens: 700,
-            temperature: 0.7,
-          },
+          model: "mistralai/Mistral-7B-Instruct-v0.2",
+          messages: [
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          max_tokens: 700,
+          temperature: 0.7,
         }),
       }
     );
 
-    const data = await hfResponse.json();
+    const data = await response.json();
 
     return {
       statusCode: 200,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     };
   } catch (err) {
     return {
       statusCode: 500,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ error: err.message }),
     };
   }
