@@ -133,32 +133,22 @@ Total Calories: [number only]
 ### Shopping List:
 [comma-separated missing ingredients or "None - you have everything!"]`;
 
-    const response = await fetch(
-      "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2",
-      {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + window.HF_API_KEY,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          inputs: prompt,
-          parameters: {
-            max_new_tokens: 700,
-            temperature: 0.7
-          }
-        })
-      }
-    );
+     const response = await fetch("/.netlify/functions/remix", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ prompt }),
+    });
 
     if (!response.ok) {
-      throw new Error("AI request failed");
+    throw new Error("AI request failed");
     }
 
     const result = await response.json();
-    const recipeText = result[0].generated_text;
-
+    const recipeText = result.text;
     setRemixedRecipe(recipeText);
+    ;
 
     // Optional parsing (best-effort)
     const calorieMatch = recipeText.match(/Total Calories:\s*(\d+)/i);
